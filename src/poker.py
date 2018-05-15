@@ -98,7 +98,7 @@ class Dealer(object):
         for player_number in range(len(self.game.players)):
             self.game.players[player_number].hand.append(temp_card)
 
-class pokerGame(object):
+class PokerGame(object):
     def __init__(self):
         self.players = []
         self.dealer = Dealer(self)
