@@ -15,7 +15,7 @@
 
 0 - Hearts
 1 - Diamonds
-2 - Clubs 
+2 - Clubs
 3 - Spades
 """
 import random
@@ -27,42 +27,41 @@ class Card(object):
 
 class Deck(object):
     def __init__(self):
-        card_number = 0
         self.cards = []
 
         for i in range(4):
             for j in range(2,15):
-                temp_obj = Card(figure=0, color=0)
+                temp_obj = Card(figure=j, color=i)
                 self.cards.append(temp_obj)
-                self.cards[card_number].color = i
-                self.cards[card_number].figure = j
-                card_number += 1
 
     def shuffleDeck(self):
         return random.shuffle(self.cards)
 
     def pickTopCard(self):
         return self.cards.pop(0)
-    
+
     def burnCard(self):
         temp_card = self.cards.pop(0)
         self.cards.append(temp_card)
 
 class Player(object):
-    def __init__(self, name, cash, *args):
+    def __init__(self, name, cash):
         self.name = name
         self.cash = cash
-        self.game = args[0]
         self.current_bid = 0
-        self.hand = [] #dopisać funkcję oceniającą aktualne karty w ręce
+        self.hole_cards = []
         self.position = 0
-        
+
+    def joinGame(self, game):   
+        self.game = game     
+        self.position = self.game.players.index(self)
+
     def receiveCard(self, card):
-        self.hand.append(card)
+        self.hole_cards.append(card)
 
     def bid(self, bid):
         self.current_bid = bid
-    
+
     def forcedBid(self):
         if self.position == 1:
             self.bid(self.game.forcedBid[self.position])
@@ -75,8 +74,8 @@ class Player(object):
 class Dealer(object):
     def __init__(self, game):
         self.game = game
-        
-    def dealCards(self):
+
+    def dealCards(self): 
         self.game.deck.shuffleDeck()
 
         for i in range(2):
@@ -87,22 +86,38 @@ class Dealer(object):
 
         for i in range(3):
             self.game.community_cards.append(self.game.deck.pickTopCard())
-        
+
         for i in range(2):
             self.game.deck.burnCard()
-
             self.game.community_cards.append(self.game.deck.pickTopCard())
 
     def unfoldCommunityCard(self):
-        temp_card = self.game.community_cards.pop(0)
-        for player_number in range(len(self.game.players)):
-            self.game.players[player_number].hand.append(temp_card)
+        self.game.visible_community_cards += 1
 
 class PokerGame(object):
     def __init__(self):
         self.players = []
-        self.dealer = Dealer(self)
+        self.dealer = None #self.dealer = Dealer(self) dodać później
         self.community_cards = []
+        self.visible_community_cards = 0
         self.bank = 0
         self.deck = Deck()
-        self.forcedBids = []
+        self.forcedBids = [10, 20]
+        self.standard_cash = 500
+    
+    def addPlayer(self, player):
+       self.players.append(player)
+    
+    def moveDealerButton(self):
+        self.players.append(self.players.pop(0))
+  
+game = PokerGame()
+game.addPlayer(Player("Janusz", game.standard_cash))
+game.addPlayer(Player("Lol", game.standard_cash))
+game.addPlayer(Player("Pirat", game.standard_cash))
+game.addPlayer(Player("Dzwonek", game.standard_cash))
+game.players[0].joinGame(game)
+game.players[1].joinGame(game)
+game.players[2].joinGame(game)
+game.players[3].joinGame(game)
+game.moveDealerButton()
