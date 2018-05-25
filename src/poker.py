@@ -1,4 +1,5 @@
 import random
+import numpy
 
 class Card(object):
     """Representation of the card
@@ -45,7 +46,6 @@ class Deck(object):
     """
     def __init__(self):
         self.cards = []
-
         for i in range(4):
             for j in range(2,15):
                 temp_obj = Card(figure=j, color=i)
@@ -72,30 +72,50 @@ class Player(object):
         Name of the player
     cash: integer
         Value of the player cash
+    neural_network: Unknown
+        Decision making neural network
 
     Attributes
     ----------
+    cash_round: integer
+        Player's cash in the bidding round
     current_bid: integer
         Current bid of the player
     hole_cards: list
         Two cards in player's hand
-    position: integer
-        Current player position at the table
     game: PokerGame object
         Game which is being joined by the player
+    position: integer
+        Current player position at the table
+    decision: integer
+        The number which reffers to the players decision as shown:
+            0 - fold
+            1 - check
+            2 - bid
+            3 - call
+
+    competitor_decisions: matrix
+        Other players' decisions formatted:
+            [[player1, player1, player2, player2,...],
+             [decision_p1, bid_p1, decision_p2, bid_p2...],
+             ...]
     """
-    def __init__(self, name, cash):
+    def __init__(self, name, cash, neural_network):
         self.name = name
         self.cash = cash
+        self.net = neural_network
+        self.cash_round = 0
         self.current_bid = 0
         self.hole_cards = []
-        self.position = 0
+        self.decision = 0
+        self.competitors_decisions = []
+        
 
     def joinGame(self, game):
         """Adding the player to the game"""   
         self.game = game     
         self.game.players.append(self)
-    
+
     def getPosition(self):
         """Retrieving current position of the player at the table"""
         self.position = self.game.players.index(self)
@@ -110,17 +130,29 @@ class Player(object):
         """
         self.hole_cards.append(card)
 
-    def bid(self, bid):
-        """Bidding by the player
-        """
-        self.current_bid += bid
+    def bid(self):
+        """Bidding by the player"""
+        #po opracowaniu sieci neuronowej trzeba będzie dodać funkcję zwracającą decyzję [decyzja bid]
+        self.cash -= self.current_bid
+        self.cash_round += self.current_bid
 
-    def forcedBid(self):
-        """Bidding the forced bids by the player if obliged"""
-        if self.position == 1:
-            self.bid(self.game.forcedBid[self.position])
-        elif self.position == 2:
-            self.bid(self.game.forcedBid[self.position])
+    def initializeObservation(self):
+        """Initializing data collection, adding other players' names"""
+        for player in self.game.players:
+            if player.name != self.name:
+                for i in range(2):
+                    self.competitors_decisions.append(player.name)
+        self.competitors_decisions = [self.competitors_decisions]
+
+    def observePlayers(self):
+        """Collect data about other players' decisions"""
+        temp = []
+        for player in self.game.players:
+            if player.name != self.name:
+                temp.append(player.decision)
+                temp.append(player.current_bid)
+        temp = [temp]
+        numpy.append(self.competitors_decisions, temp, 0)
 
 class Dealer(object):
     """Representation of the dealer
@@ -136,16 +168,12 @@ class Dealer(object):
     def dealCards(self):
         """Dealing cards""" 
         self.game.deck.shuffleDeck()
-
         for i in range(2):
             for player_number in range(self.game.players):
                 self.game.players[player_number].receiveCard(self.game.deck.pickTopCard())
-
         self.game.deck.burnCard()
-
         for i in range(3):
             self.game.community_cards.append(self.game.deck.pickTopCard())
-
         for i in range(2):
             self.game.deck.burnCard()
             self.game.community_cards.append(self.game.deck.pickTopCard())
@@ -175,21 +203,50 @@ class PokerGame(object):
         Amount of cash in the round
     deck: Deck object
         The deck of card used in the game
-    forcedBid: list
+    forced_bids: list
         Predefined small bid and big bid
     standard_cash: integer
         Standard amount of money player starts game with
     """
     def __init__(self):
         self.players = []
-        self.dealer = None #self.dealer = Dealer(self) dodać później
+        self.dealer = None 
         self.community_cards = []
         self.visible_community_cards = 0
         self.bank = []
         self.deck = Deck()
-        self.forcedBids = [10, 20]
+        self.forced_bids = [10, 20]
         self.standard_cash = 500
 
     def moveDealerButton(self):
-        """Shitft players list so that different player is the dealer"""
+        """Shitft players list so that a different player is the dealer"""
         self.players.append(self.players.pop(0))
+
+    def startGame(self):
+        """Create dealer instance and deal cards"""
+        self.dealer = Dealer(self)
+        self.dealer.dealCards()
+
+    def checkBidMatch(self):
+        """Check if all players' bids are qual
+        
+        Returns
+        -------
+        1 - all bids are equal
+        0 - bids are not equal
+        """
+        for nom_player in self.players:
+            for player in self.players:
+                if player.cash_round != nom_player.cash_round:
+                    return 0
+        return 1            
+
+    def biddingRound(self):
+        """Plyers are bidding until all bids are equal"""
+        while not self.checkBidMatch():
+            for player in self.players:
+                if self.players.index(player) == 0:
+                    player_dealer = player
+                elif self.players.index(player) == (len(self.players) - 1):
+                    player.bid()
+                    player_dealer.bid()
