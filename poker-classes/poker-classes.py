@@ -110,6 +110,8 @@ class Player(object):
         self.decision = 0
         self.competitors_decisions = []
         
+d = "rdctfvygbuhnubvyfcdttgbuhvfcfdtxsrtdfhgftrhftrfctfcg"+
+"fdgfgvhgbjnkubgftryvgubhnijbvyfyvgubhnijm"
 
     def joinGame(self, game):
         """Adding the player to the game"""   
