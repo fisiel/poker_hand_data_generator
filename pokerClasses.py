@@ -34,10 +34,6 @@ class Card(object):
 
 class Deck(object):
     """Representation of the deck of cards
-    
-    Parameters
-    ----------
-    None
 
     Attributes
     ----------
@@ -93,7 +89,6 @@ class Player(object):
             1 - check
             2 - bid
             3 - call
-
     competitor_decisions: matrix
         Other players' decisions formatted:
             [[player1, player1, player2, player2,...],
@@ -109,9 +104,6 @@ class Player(object):
         self.hole_cards = []
         self.decision = 0
         self.competitors_decisions = []
-        
-d = "rdctfvygbuhnubvyfcdttgbuhvfcfdtxsrtdfhgftrhftrfctfcg"+
-"fdgfgvhgbjnkubgftryvgubhnijbvyfyvgubhnijm"
 
     def joinGame(self, game):
         """Adding the player to the game"""   
@@ -188,10 +180,6 @@ class Dealer(object):
 
 class PokerGame(object):
     """Representation of the poker round
-
-    Parameters
-    ----------
-    None
 
     Attributes
     ----------
