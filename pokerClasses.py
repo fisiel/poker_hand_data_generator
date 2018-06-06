@@ -6,8 +6,8 @@ class Card(object):
     
     Parameters
     ---------------------
-    figure: integer
-        The number which reffers to the figure of the card as shown:
+    rank: integer
+        The number which reffers to the rank of the card as shown:
             2 - 2
             3 - 3
             4 - 4
@@ -21,16 +21,16 @@ class Card(object):
             12 - Queen
             13 - King
             14 - Ace
-    color: integer
-        The number which refferes to the color of the card as shown:
+    suit: integer
+        The number which refferes to the suit of the card as shown:
             0 - Hearts
             1 - Diamonds
             2 - Clubs
             3 - Spades
     """
-    def __init__(self, figure, color):
-            self.figure = figure
-            self.color = color
+    def __init__(self, rank, suit):
+            self.rank = rank
+            self.suit = suit
 
 class Deck(object):
     """Representation of the deck of cards
@@ -44,7 +44,7 @@ class Deck(object):
         self.cards = []
         for i in range(4):
             for j in range(2,15):
-                temp_obj = Card(figure=j, color=i)
+                temp_obj = Card(rank=j, suit=i)
                 self.cards.append(temp_obj)
 
     def shuffleDeck(self):
