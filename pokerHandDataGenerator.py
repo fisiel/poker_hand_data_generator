@@ -1,5 +1,4 @@
 from pokerClasses import Card, Deck
-import csv
 import time
 
 class PokerHandDataGenerator(object):
@@ -17,23 +16,13 @@ class PokerHandDataGenerator(object):
         -------
         True or False
         """
-        iterator = iter(hand)
-        if not all(hand[0].suit == card.suit for card in hand):
-            return False
+        if self.isStraightFlush(hand) and hand[0].rank == 10:
+            return True
         else:
-            for card in hand:
-                try:
-                    if not next(iterator).rank - card.rank > 1:
-                        return False
-                except StopIteration:
-                    pass
-            if hand[0].rank == 10:
-                return True
-            else:
-                return False
+            return False
 
     def isStraightFlush(self, hand):
-        """Chcecking if the hand is royal flush
+        """Chcecking if the hand is straight flush
         
         Parameters
         ----------
@@ -44,17 +33,10 @@ class PokerHandDataGenerator(object):
         -------
         True or False
         """
-        iterator = iter(hand)
-        if not all(hand[0].suit == card.suit for card in hand):
-            return False
-        else:
-            for card in hand:
-                try:
-                    if not next(iterator).rank - card.rank > 1:
-                        return False
-                except StopIteration:
-                    pass                
+        if self.isFlush(hand) and self.isStraight(hand):
             return True
+        else:
+            return False
     
     def isFourOfAKind(self, hand):
         """Chcecking if the hand is four of a kind
@@ -90,8 +72,8 @@ class PokerHandDataGenerator(object):
         -------
         True or False
         """
-        check_sum = [0, 0, 0]
-        temp_hand = hand
+        check_sum = [0, 0]
+        temp_hand = list(hand)
         for reference in temp_hand:
             for card in temp_hand:
                 if reference.rank == card.rank:            
@@ -99,13 +81,21 @@ class PokerHandDataGenerator(object):
             if check_sum[0] == 3:
                 temp_hand.pop(temp_hand.index(reference))
                 check_sum[1] += 1
-            elif check_sum[0] == 2:
+                break
+            check_sum[0] = 0
+        temp_hand = list(hand)
+        for reference in temp_hand:
+            for card in temp_hand:
+                if reference.rank == card.rank:            
+                    check_sum[0] +=1
+            if check_sum[0] == 2:
                 temp_hand.pop(temp_hand.index(reference))
-                check_sum[2] += 1
-            check_sum[0] = 0 
-        if (check_sum[1] and check_sum[2]) == 1:
+                check_sum[1] += 1
+                break
+            check_sum[0] = 0
+        if check_sum[1] == 2:
             return True
-        else:          
+        else:
             return False
 
     def isFlush(self, hand):
@@ -120,10 +110,10 @@ class PokerHandDataGenerator(object):
         -------
         True or False
         """
-        if not all(hand[0].suit == card.suit for card in hand):
-            return False
-        else:
-            return True
+        for i in range(0, len(hand)-1):
+            if hand[i+1].suit != hand[i].suit:
+                return False
+        return True
 
     def isStraight(self, hand):
         """Chcecking if the hand is straight
@@ -137,13 +127,9 @@ class PokerHandDataGenerator(object):
         -------
         True or False
         """
-        iterator = iter(hand)
-        for card in hand:
-            try:
-                if not next(iterator).rank - card.rank > 1:
-                    return False
-            except StopIteration:
-                pass               
+        for i in range(0, len(hand)-1):
+            if (hand[i+1].rank - hand[i].rank) != 1:
+                return False
         return True
 
     def isThreeOfAKind(self, hand):
@@ -181,7 +167,7 @@ class PokerHandDataGenerator(object):
         True or False
         """
         check_sum = [0, 0]
-        temp_hand = hand
+        temp_hand = list(hand)
         for reference in temp_hand:
             for card in temp_hand:
                 if reference.rank == card.rank:            
@@ -206,14 +192,13 @@ class PokerHandDataGenerator(object):
         -------
         True or False
         """
-        check_sum = 0
         for reference in hand:
-            for card in hand:
-                if reference.rank == card.rank:            
-                    check_sum +=1
-            if check_sum == 2:
-                return True
-            check_sum = 0
+            temp_hand = list(hand)
+            temp_hand.pop(hand.index(reference))
+            for card in temp_hand:
+                if card.rank == reference.rank:           
+                    return True
+            temp_hand.append(reference)
         return False
 
     def classifyHand(self, hand):
@@ -279,17 +264,17 @@ class PokerHandDataGenerator(object):
             formatted_list.append(card.suit)
             formatted_list.append(card.rank)
         formatted_list.append(self.classifyHand(hand))
-        return [formatted_list]
+        return formatted_list
     
-    def generatePokerHands(self):
+    def generatePokerHands(self, file):
         """Generates every possible poker hand
         
         Returns
         -------
-        data: matrix
-            Matrix where each row represents one poker hand
+        num: integer
+            Number of hand instances
         """
-        data = []
+        num = 0
         deck_1 = Deck()
         for card_1 in deck_1.cards:
             deck_2 = deck_1
@@ -305,21 +290,21 @@ class PokerHandDataGenerator(object):
                         deck_5.cards.pop(deck_4.cards.index(card_4))
                         for card_5 in deck_5.cards:
                             hand = self.createDataRow([card_1, card_2, card_3, card_4, card_5])
-                            data.append(hand)
+                            hand = str(hand).strip('[]')
+                            file.write(hand + "\n")
                             print(hand)
+                            num += 1
                         deck_5.cards.append(card_4)
                     deck_4.cards.append(card_3)
                 deck_3.cards.append(card_2)
-            deck_2.cards.append(card_1) 
-        return data           
+            deck_2.cards.append(card_1)  
+        return num         
 
-t = time.time()          
+t = time.time()      
+_file = open('poker_hand_data.data', 'a+')  
 data_generator = PokerHandDataGenerator()
-output_data = data_generator.generatePokerHands()
-sorted(output_data, key=lambda data_row: data_row[10])
-csv_file = open('poker_hand_data.csv', 'w')  
-writer = csv.writer(csv_file)
-writer.writerows(output_data)
+num_ = data_generator.generatePokerHands(_file)
+_file.close()
 elapsed = time.time() - t
-print(len(output_data))
 print(elapsed)
+print(num_)
