@@ -1,5 +1,4 @@
 from pokerClasses import Card, Deck
-import time
 
 class PokerHandDataGenerator(object):
     """Poker hand data generator"""
@@ -266,7 +265,7 @@ class PokerHandDataGenerator(object):
         formatted_list.append(self.classifyHand(hand))
         return formatted_list
     
-    def generatePokerHands(self, file):
+    def generatePokerHands(self):
         """Generates every possible poker hand
         
         Returns
@@ -274,11 +273,12 @@ class PokerHandDataGenerator(object):
         num: integer
             Number of hand instances
         """
-        num = 0
         deck_1 = Deck()
         for card_1 in deck_1.cards:
             deck_2 = deck_1
             deck_2.cards.pop(deck_1.cards.index(card_1))
+            filename = 'poker_hand_%s_%s.data' % (card_1.suit, card_1.rank)
+            file = open(filename, 'a+')
             for card_2 in deck_2.cards:
                 deck_3 = deck_2
                 deck_3.cards.pop(deck_2.cards.index(card_2))
@@ -292,19 +292,11 @@ class PokerHandDataGenerator(object):
                             hand = self.createDataRow([card_1, card_2, card_3, card_4, card_5])
                             hand = str(hand).strip('[]')
                             file.write(hand + "\n")
-                            print(hand)
-                            num += 1
                         deck_5.cards.append(card_4)
                     deck_4.cards.append(card_3)
                 deck_3.cards.append(card_2)
-            deck_2.cards.append(card_1)  
-        return num         
-
-t = time.time()      
-_file = open('poker_hand_data.data', 'a+')  
+            deck_2.cards.append(card_1) 
+            file.close()      
+    
 data_generator = PokerHandDataGenerator()
-num_ = data_generator.generatePokerHands(_file)
-_file.close()
-elapsed = time.time() - t
-print(elapsed)
-print(num_)
+data_generator.generatePokerHands()
