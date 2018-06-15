@@ -1,4 +1,6 @@
-from poker import Card, Deck
+import sys
+sys.path.insert(0,'D:\github\pokerLibraries')
+from cards import Card, Deck
 
 class PokerHandDataGenerator(object):
     """Poker hand data generator"""
