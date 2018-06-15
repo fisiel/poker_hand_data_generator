@@ -1,4 +1,4 @@
-from pokerClasses import Card, Deck
+from poker import Card, Deck
 
 class PokerHandDataGenerator(object):
     """Poker hand data generator"""
