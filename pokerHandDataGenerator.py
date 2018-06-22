@@ -1,5 +1,3 @@
-import sys
-sys.path.insert(0,'D:\github\pokerLibraries')
 from cards import Card, Deck
 
 class PokerHandDataGenerator(object):
@@ -275,29 +273,29 @@ class PokerHandDataGenerator(object):
         num: integer
             Number of hand instances
         """
-        deck_1 = Deck()
-        for card_1 in deck_1.cards:
-            deck_2 = deck_1
-            deck_2.cards.pop(deck_1.cards.index(card_1))
+        deck_1 = Deck().cards
+        for card_1 in deck_1:
+            deck_2 = list(deck_1)
+            deck_2.pop(deck_1.index(card_1))
             filename = 'poker_hand_%s_%s.data' % (card_1.suit, card_1.rank)
             file = open(filename, 'a+')
-            for card_2 in deck_2.cards:
-                deck_3 = deck_2
-                deck_3.cards.pop(deck_2.cards.index(card_2))
-                for card_3 in deck_3.cards:
-                    deck_4 = deck_3
-                    deck_4.cards.pop(deck_3.cards.index(card_3))
-                    for card_4 in deck_4.cards:
-                        deck_5 = deck_4
-                        deck_5.cards.pop(deck_4.cards.index(card_4))
-                        for card_5 in deck_5.cards:
+            for card_2 in deck_2:
+                deck_3 = list(deck_2)
+                deck_3.pop(deck_2.index(card_2))
+                for card_3 in deck_3:
+                    deck_4 = list(deck_3)
+                    deck_4.pop(deck_3.index(card_3))
+                    for card_4 in deck_4:
+                        deck_5 = list(deck_4)
+                        deck_5.pop(deck_4.index(card_4))
+                        for card_5 in deck_5:
                             hand = self.createDataRow([card_1, card_2, card_3, card_4, card_5])
                             hand = str(hand).strip('[]')
                             file.write(hand + "\n")
-                        deck_5.cards.append(card_4)
-                    deck_4.cards.append(card_3)
-                deck_3.cards.append(card_2)
-            deck_2.cards.append(card_1) 
+                        deck_5.append(card_4)
+                    deck_4.append(card_3)
+                deck_3.append(card_2)
+            deck_2.append(card_1) 
             file.close()      
     
 data_generator = PokerHandDataGenerator()
